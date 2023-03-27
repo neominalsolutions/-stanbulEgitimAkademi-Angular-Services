@@ -19,6 +19,17 @@ export class TodosPageComponent implements OnInit {
   // private dersek sadece typescript tarafından servise erişebiliriz
   // public tanımlarsak servis template den de erişilebilir olur.
 
+  // rxjs nedir
+  // httpclientModule
+  // httpclient service
+  // observable
+  // subscribe
+  // async pipe
+  // sweatalert
+  // ngb boostrap
+  // new Regex
+  // ngOninit
+  // Constructor injection
   constructor(private http: HttpClient, public router: Router) {}
 
   // ! ile undefined olabilir diye bir tanımlama yaptım
