@@ -1,0 +1,66 @@
+<div class="mb-3 row">
+  <label for="table-filtering-search" class="col-xs-3 col-sm-auto col-form-label"> Task arama :</label>
+  <div class="col-xs-3 col-sm-auto">
+    <input [ngModel]="searchText" (ngModelChange)="onSearch($event)" id="table-filtering-search" class="form-control"
+      type="text" />
+  </div>
+</div>
+
+<!-- ngModel ile çalışıyorsak form içerisinde bir işlem yapmamalıyız -->
+<p>
+  {{searchText }}
+
+</p>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Görev Nosu</th>
+      <th scope="col">Görev Tanımı</th>
+      <th scope="col">Durum</th>
+      <th scope="col">İşlemler</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- apidan çekilen değerleri arayüzde gösterebilmek için async pipe kullanırız. -->
+    <tr [ngClass]="todo?.completed ? 'tamamlandi':'tamamlanmadi'" *ngFor="let todo of this.todos$ | async; index as i">
+      <td>{{ i + 1 }}</td>
+
+      <td>
+        {{todo.title}}
+      </td>
+
+      <td>
+
+        <span *ngIf="todo.completed">
+          Tamamlandı
+        </span>
+
+        <span *ngIf="!todo.completed">
+
+          <div class="custom-control custom-switch">
+            <input [(ngModel)]="todo.completed" type="checkbox" class="custom-control-input" id="customSwitch1">
+            <label class="custom-control-label" for="customSwitch1"> Tamamlanmadı </label>
+          </div>
+
+        </span>
+      </td>
+
+      <td>
+        <button [swal]="deleteSwal" type="button" class="btn btn-danger">Sil</button>
+
+        <!-- delete butonuna basılınca aşağıdaki componenti çağır -->
+        <swal #deleteSwal title="Kaydı silmek istediğinize emin misiniz?" text="Bu işlem Geri alınamaz" icon="question"
+          [showCancelButton]="true" [focusCancel]="true" (confirm)="Delete(todo.id)">
+        </swal>
+        <!-- swall modaldan ok butonuna basılırsa Delete methodunu çağırdı. -->
+
+        &nbsp;
+        <button (click)="Edit(todo.id)" type="button" class="btn btn-primary">Güncelle</button>
+      </td>
+
+
+
+    </tr>
+  </tbody>
+</table>
