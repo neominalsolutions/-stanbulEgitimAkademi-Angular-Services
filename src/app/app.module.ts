@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TodosPageComponent } from './todos-page/todos-page.component';
 import { HttpClientModule } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 // angularda veri çekme işlemi yapabilir. Aynı axios gibi get,post,put,delete isteklerini atabiliriz.
 
@@ -24,6 +24,7 @@ import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
     HttpClientModule,
     FormsModule, // ngModel tanımı için Forms module ihtiyacımız var
     SweetAlert2Module.forRoot(), // 3rd yüklenen programları appmodule import ediyoruz.
+    ReactiveFormsModule, // React Hooks Form
   ],
   providers: [],
   bootstrap: [AppComponent],

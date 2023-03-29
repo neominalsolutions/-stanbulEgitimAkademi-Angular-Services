@@ -12,6 +12,15 @@
 
 </p>
 
+<!-- yeni bir kayıt ekleme modal açar -->
+
+
+<div class="float-end">
+  <button class="btn btn-primary me-2" (click)="AddNew()">Add</button>
+</div><br>
+
+
+
 <table class="table">
   <thead>
     <tr>
@@ -23,7 +32,8 @@
   </thead>
   <tbody>
     <!-- apidan çekilen değerleri arayüzde gösterebilmek için async pipe kullanırız. -->
-    <tr [ngClass]="todo?.completed ? 'tamamlandi':'tamamlanmadi'" *ngFor="let todo of this.todos$ | async; index as i">
+    <!-- *ngFor="let todo of this.todo$ | async; -->
+    <tr [ngClass]="todo?.completed ? 'tamamlandi':'tamamlanmadi'" *ngFor="let todo of this.todos; index as i">
       <td>{{ i + 1 }}</td>
 
       <td>
@@ -56,7 +66,7 @@
         <!-- swall modaldan ok butonuna basılırsa Delete methodunu çağırdı. -->
 
         &nbsp;
-        <button (click)="Edit(todo.id)" type="button" class="btn btn-primary">Güncelle</button>
+        <button (click)="Edit(todo.id)" type="button" class="btn btn-primary">Düzenle</button>
       </td>
 
 
@@ -64,3 +74,119 @@
     </tr>
   </tbody>
 </table>
+
+
+<!-- # kullanrak ilgili template için bir id tanımlaması yaptık -->
+<!-- <div class="mt-3">
+  visible: {{visible}}
+  <button (click)="visible = !visible">Göster Gizle</button>
+  <div *ngIf="visible == true then temp1 else temp2"></div>
+ 
+  <ng-template #temp1>
+    Temp1
+  </ng-template>
+
+  <ng-template #temp2>
+    Temp2
+  </ng-template>
+
+</div> -->
+
+<!-- 
+<button class="btn btn-lg btn-outline-primary" (click)="open(editModal)">Launch demo modal</button> -->
+
+
+<!-- angularda ng-template directive ile duruma göre sayfada gösterilecek olan componentleri ayarlayabiliyoruz -->
+<ng-template #editModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Edit Todo</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <!-- form elementine [formGroup] attr directive vasıtası ile EditForm ismi bağladık -->
+    <form [formGroup]="EditForm">
+
+      <!-- formControlName directive de her bir form üyesine forma ait alanları fieldları bağladık -->
+
+      <div>
+        <input [hidden]="true" formControlName="id" />
+      </div>
+
+      <div class="mb-3">
+        <label for="exampleFormControlInput1" class="form-label"> Title</label>
+        <input formControlName="title" class="form-control" placeholder="title" />
+
+        <span style="color:red" *ngIf="EditForm.get('title')?.hasError('required')">
+          Title alanı boş geçilemez
+        </span>
+
+        <span style="color:red" *ngIf="EditForm.get('title')?.hasError('minlength')">
+          En az 10 karakter girilmelidir.
+        </span>
+      </div>
+
+
+      <div class="mb-3">
+        <div class="form-check">
+          <input formControlName="completed" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+          <label class="form-check-label" for="flexCheckDefault">
+            Is Completed
+          </label>
+        </div>
+      </div>
+
+
+    </form>
+  </div>
+  <div class="modal-footer">
+    <!-- mvc deki modelState.isValid kontrolü -->
+    <button [disabled]="!EditForm.valid" type="button" class="btn btn-outline-dark" (click)="Update()">Güncelle</button>
+  </div>
+</ng-template>
+
+
+
+<ng-template #addModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New Todo</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <!-- form elementine [formGroup] attr directive vasıtası ile EditForm ismi bağladık -->
+    <form [formGroup]="AddForm">
+
+      <!-- formControlName directive de her bir form üyesine forma ait alanları fieldları bağladık -->
+
+      <div class="mb-3">
+        <label for="exampleFormControlInput1" class="form-label"> Title</label>
+        <input formControlName="title" class="form-control" placeholder="title" />
+
+        <span style="color:red" *ngIf="AddForm.get('title')?.hasError('required')">
+          Title alanı boş geçilemez
+        </span>
+
+        <span style="color:red" *ngIf="AddForm.get('title')?.hasError('minlength')">
+          En az 10 karakter girilmelidir.
+        </span>
+      </div>
+
+
+      <div class="mb-3">
+        <div class="form-check">
+          <input formControlName="completed" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+          <label class="form-check-label" for="flexCheckDefault">
+            Is Completed
+          </label>
+        </div>
+      </div>
+
+
+    </form>
+  </div>
+  <div class="modal-footer">
+    <!-- mvc deki modelState.isValid kontrolü -->
+    <button [disabled]="!AddForm.valid" type="button" class="btn btn-outline-dark" (click)="AddItem()">Kaydet</button>
+  </div>
+</ng-template>
+
+<!-- AddItem ise yeni bir item eklemek için kullandık -->

@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { map, Observable } from 'rxjs';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { finalize, from, map, Observable, of } from 'rxjs';
 
 export interface ITodo {
   id: number;
@@ -30,10 +32,29 @@ export class TodosPageComponent implements OnInit {
   // new Regex
   // ngOninit
   // Constructor injection
-  constructor(private http: HttpClient, public router: Router) {}
+  constructor(
+    private http: HttpClient,
+    public router: Router,
+    private modalService: NgbModal
+  ) {}
+
+  editModalRef!: NgbModalRef;
+
+  openModal(content: any) {
+    // modalın açılmasını modelService.open() methodu sağlıyor
+    this.editModalRef = this.modalService.open(content, {
+      ariaLabelledBy: 'modal-basic-title',
+    });
+  }
+
+  close() {
+    this.editModalRef.close();
+  }
 
   // ! ile undefined olabilir diye bir tanımlama yaptım
-  todos$!: Observable<ITodo[]>;
+  todos$!: Observable<ITodo[]>; // apidan çekilecek olan verinin ilk hali, filtreleme sonucunda input temizlenirse ilk todos değerine geri dönmek için bunu kullandık.
+
+  todos: ITodo[] = []; // arayüze yansıtılan todos verisi, filtereleme, ekdleme, çıkarma,silme,arama işlemleri bu nesne üzerinden yapılır
   searchText!: string;
   // Observable apidan gelecek bir değer olduğu için observable tanımladık.
   // apidan veri çekerken observable olan değişkenlerin sonuna$ ifadesi yazarız.
@@ -47,7 +68,12 @@ export class TodosPageComponent implements OnInit {
     // 1 kereye mahsus çalışır apidan veri bu method içeerisinde çekilir.
 
     // sayfa ilk açılışında hepsini yükle
-    this.todos$ = this.loadTodos();
+    this.todos$ = this.loadTodos(); // verinin ilk halini yükledik. Api nesnesi
+    this.todos$.subscribe((response) => {
+      // observable olan verilere subsribe olup verinin son akışını todos dizisne aktardıl. axios.then gibi düşünebiliriz.
+      // verinin ilk çekildiğindeki response'u todos dizi içerisine gösteri todos dizini arayüzde *ngFor ile döndük.
+      this.todos = [...response];
+    });
   }
 
   onSearch(value: string) {
@@ -56,42 +82,112 @@ export class TodosPageComponent implements OnInit {
 
     // aramak için searchtex en az 3 karakter yazılmış ise
     if (this.searchText.length > 3) {
-      this.todos$ = this.todos$.pipe(
-        map((response) => {
-          // map operatörü ile yakalanan veriyi farklı bir formatta döndürdük filtereledik filtrelenmiş halini döndürdük.
-          console.log('response', response);
-          return response.filter((x) =>
-            // aramları büyük küçük harf duyarlı hale getirdik.
-            new RegExp(this.searchText, 'i').test(x.title)
-          );
-        })
-      );
+      // referans güncelleme işlemleri
+      // angular change detector obje ve dizi ile çalışırken bu referans güncelleme spread operatörü sayesinde view günceller.
+      this.todos = [
+        ...this.todos.filter((x) =>
+          // aramları büyük küçük harf duyarlı hale getirdik.
+          new RegExp(this.searchText, 'i').test(x.title)
+        ),
+      ];
     } else if (this.searchText.length == 0) {
       // arama çubuğundaki arama temizlenince hepsini yükle
-      this.todos$ = this.loadTodos();
+      this.todos$.subscribe((response) => {
+        this.todos = [...response];
+      });
     }
   }
 
   Delete(id: number) {
-    // silincecek id si listede olmayanları filtrele dedik.
-    this.todos$ = this.todos$.pipe(
-      map((response) => {
-        return response.filter((x) => x.id != id);
-      })
-    );
+    this.todos = [...this.todos.filter((x) => x.id != id)];
   }
 
-  Edit(id: number) {
-    const editModel$ = this.todos$.pipe(
-      map((response) => {
-        return response.find((x) => x.id == id);
-      })
-    );
+  visible: boolean = false;
 
-    // takip edilecek nesnedye typescript tarafında erişmek istersek async pipe olmadığından async pipe arayüzde kullanıyoruz
-    // subscribe methodu ile editlenen nesnedye bağlanıyoruz.
-    editModel$.subscribe((value) => {
-      console.log('editlenecek değer', value);
-    });
+  // document.getElementById('editModal')
+  // editmodal referansına ulaşmamızı sağlayan bir teknik. $('#id')
+  // idisinden ilgili componenti yakalamızı sağlar.
+  @ViewChild('editModal') editModal!: NgbModal;
+
+  // formlar ile çalışmamızı sağlayan bir teknik.
+  // birden fazla form control ile çalışacağımız zaman FormGroup nesnesi tanımlarız.
+  // FormControl nesnesi ile her bir inputun değeri eşleriz.
+  EditForm: FormGroup = new FormGroup({
+    id: new FormControl('', Validators.required),
+    title: new FormControl('', [Validators.required, Validators.minLength(10)]),
+    completed: new FormControl(false),
+  });
+
+  // edit butonuna basılınca editlenen formu ekranda gösterdik. modal içerisinde bu modal state den sorumlu kısım EditForm (Reactive Form yöntemi)
+
+  Edit(id: number) {
+    const editModel: any = this.todos.find((x) => x.id == id);
+    this.EditForm.patchValue(editModel);
+    // edit forma editModel değerini gönderdim.
+    this.openModal(this.editModal);
+  }
+
+  Update() {
+    let editModel: any = this.todos.find((x) => x.id == this.EditForm.value.id);
+
+    editModel = { ...this.EditForm.value };
+
+    this.todos = [...this.todos];
+
+    this.EditForm.reset();
+    this.editModalRef.close();
+  }
+
+  AddForm: FormGroup = new FormGroup({
+    id: new FormControl(),
+    title: new FormControl('', [Validators.required, Validators.minLength(10)]),
+    completed: new FormControl(false),
+  });
+
+  // idsinden elementin referansına erişiyorduk
+  @ViewChild('addModal') addModal!: NgbModal;
+
+  addModalRef!: NgbModalRef;
+
+  AddNew() {
+    // private modalService: NgbModal
+    this.addModalRef = this.modalService.open(this.addModal);
+  }
+
+  // kaydet butonuna basınca listeye yeni bir item girmemiz gerekiyor.
+  AddItem() {
+    console.log('add-item', this.AddForm.value);
+    // ekleme işlemi sonrasında modalı kapadık
+
+    // unique id değeri verdik.
+    this.AddForm.value.id = Math.round(Math.random() * 200000);
+
+    console.log('this.AddForm.value', this.AddForm.value);
+
+    // listenin ilk elemanına form değerini ekledik.
+    this.todos = [this.AddForm.value, ...this.todos];
+
+    // api ye veri gönderme post işlemi
+    this.http
+      .post('https://jsonplaceholder.typicode.com/todos', this.AddForm.value)
+      .subscribe({
+        next: (response) => {
+          // promise then bloğu
+          console.log('api-response', response);
+        },
+        error: (err) => {
+          // promise catch bloğu
+          console.log('err', err);
+        },
+        complete: () => {
+          // promise finally bloğu
+          this.addModalRef.close();
+          // modal kapadık.
+          // formu resetledik
+          this.AddForm.reset();
+        },
+      });
+
+    // api post işlemi ile apiye this.AddForm.value gönder.
   }
 }
