@@ -1,0 +1,15 @@
+<!-- sayfa componentlerinde veri çekilip alt componentlere veri dağıtılır. -->
+
+<!-- sayfa componentleri default componentlerden beselenerek arayüzler geliştirilmeli -->
+
+<app-todo-list *ngIf="todoData.length > 0" [todos]="todoData"></app-todo-list>
+
+<ng-template #editModal let-modal>
+  <app-todo-edit></app-todo-edit>
+</ng-template>
+
+
+<ng-template #addModal let-modal>
+  <!-- sayfaya ilgili componenti çağırdık -->
+  <app-todo-add></app-todo-add>
+</ng-template>

@@ -1,0 +1,39 @@
+<div class="modal-header">
+  <h4 class="modal-title" id="modal-basic-title">New Todo</h4>
+</div>
+<div class="modal-body">
+  <!-- form elementine [formGroup] attr directive vasıtası ile EditForm ismi bağladık -->
+  <form [formGroup]="AddForm">
+
+    <!-- formControlName directive de her bir form üyesine forma ait alanları fieldları bağladık -->
+
+    <div class="mb-3">
+      <label for="exampleFormControlInput1" class="form-label"> Title</label>
+      <input formControlName="title" class="form-control" placeholder="title" />
+
+      <span style="color:red" *ngIf="AddForm.get('title')?.hasError('required')">
+        Title alanı boş geçilemez
+      </span>
+
+      <span style="color:red" *ngIf="AddForm.get('title')?.hasError('minlength')">
+        En az 10 karakter girilmelidir.
+      </span>
+    </div>
+
+
+    <div class="mb-3">
+      <div class="form-check">
+        <input formControlName="completed" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+        <label class="form-check-label" for="flexCheckDefault">
+          Is Completed
+        </label>
+      </div>
+    </div>
+
+
+  </form>
+</div>
+<div class="modal-footer">
+  <!-- mvc deki modelState.isValid kontrolü -->
+  <button [disabled]="!AddForm.valid" type="button" class="btn btn-outline-dark" (click)="AddItem()">Kaydet</button>
+</div>

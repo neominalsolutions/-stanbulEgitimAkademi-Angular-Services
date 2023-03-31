@@ -1,0 +1,38 @@
+<div class="modal-header">
+  <h4 class="modal-title" id="modal-basic-title">Edit Todo</h4>
+</div>
+<div class="modal-body">
+
+  <form [formGroup]="EditForm">
+    <div>
+      <input [hidden]="true" formControlName="id" />
+    </div>
+
+    <div class="mb-3">
+      <label for="exampleFormControlInput1" class="form-label"> Title</label>
+      <input formControlName="title" class="form-control" placeholder="title" />
+
+      <span style="color:red" *ngIf="EditForm.get('title')?.hasError('required')">
+        Title alanı boş geçilemez
+      </span>
+
+      <span style="color:red" *ngIf="EditForm.get('title')?.hasError('minlength')">
+        En az 10 karakter girilmelidir.
+      </span>
+    </div>
+
+    <div class="mb-3">
+      <div class="form-check">
+        <input formControlName="completed" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+        <label class="form-check-label" for="flexCheckDefault">
+          Is Completed
+        </label>
+      </div>
+    </div>
+
+  </form>
+</div>
+<div class="modal-footer">
+  <!-- mvc deki modelState.isValid kontrolü -->
+  <button [disabled]="!EditForm.valid" type="button" class="btn btn-outline-dark" (click)="Update()">Güncelle</button>
+</div>

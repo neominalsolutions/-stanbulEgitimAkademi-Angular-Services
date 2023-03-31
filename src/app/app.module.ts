@@ -8,6 +8,10 @@ import { TodosPageComponent } from './todos-page/todos-page.component';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
+import { TodosPageNewComponent } from './todos-page-new/todos-page-new.component';
+import { TodoAddComponent } from './todos-page-new/components/todo-add/todo-add.component';
+import { TodoEditComponent } from './todos-page-new/components/todo-edit/todo-edit.component';
+import { TodoListComponent } from './todos-page-new/components/todo-list/todo-list.component';
 // angularda veri çekme işlemi yapabilir. Aynı axios gibi get,post,put,delete isteklerini atabiliriz.
 
 // 1. işlem HttpClientModule appModule import etmek
@@ -16,7 +20,7 @@ import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 // 4. işlem gelen veriyi view'de async pipe ile karşılamak.
 
 @NgModule({
-  declarations: [AppComponent, TodosPageComponent],
+  declarations: [AppComponent, TodosPageComponent, TodosPageNewComponent, TodoAddComponent, TodoEditComponent, TodoListComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,

@@ -4,6 +4,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { finalize, from, map, Observable, of } from 'rxjs';
+import { TodoService } from './todo.service';
 
 export interface ITodo {
   id: number;
@@ -35,7 +36,8 @@ export class TodosPageComponent implements OnInit {
   constructor(
     private http: HttpClient,
     public router: Router,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private todoService: TodoService
   ) {}
 
   editModalRef!: NgbModalRef;
@@ -60,6 +62,7 @@ export class TodosPageComponent implements OnInit {
   // apidan veri çekerken observable olan değişkenlerin sonuna$ ifadesi yazarız.
 
   loadTodos() {
+    // buradaki kodları servislere çekiyoruz
     return this.http.get<ITodo[]>('https://jsonplaceholder.typicode.com/todos');
   }
 
@@ -68,7 +71,9 @@ export class TodosPageComponent implements OnInit {
     // 1 kereye mahsus çalışır apidan veri bu method içeerisinde çekilir.
 
     // sayfa ilk açılışında hepsini yükle
-    this.todos$ = this.loadTodos(); // verinin ilk halini yükledik. Api nesnesi
+    //this.todos$ = this.loadTodos(); // verinin ilk halini yükledik. Api nesnesi
+    this.todos$ = this.todoService.loadTodos();
+    // not eğer değişken $ile bitip observable tanımlanmış ise subsribe etmiyoruz. fakat veriyi aşağıdaki satırda ekrana basabilmek için bu sefer observable olan todo$ subscribe olduk
     this.todos$.subscribe((response) => {
       // observable olan verilere subsribe olup verinin son akışını todos dizisne aktardıl. axios.then gibi düşünebiliriz.
       // verinin ilk çekildiğindeki response'u todos dizi içerisine gösteri todos dizini arayüzde *ngFor ile döndük.
@@ -98,8 +103,13 @@ export class TodosPageComponent implements OnInit {
     }
   }
 
+  // arayüzden ilgili değerin silinmesi işlemi
   Delete(id: number) {
     this.todos = [...this.todos.filter((x) => x.id != id)];
+
+    // apidan da silmek
+    // api tarafındaki kodların çalışması için subscribe methodunu çağırıyoruz.
+    this.todoService.deleteTodo(id).subscribe();
   }
 
   visible: boolean = false;
@@ -120,6 +130,7 @@ export class TodosPageComponent implements OnInit {
 
   // edit butonuna basılınca editlenen formu ekranda gösterdik. modal içerisinde bu modal state den sorumlu kısım EditForm (Reactive Form yöntemi)
 
+  // arayüzdeki değerlerin modala aktarılması içindi
   Edit(id: number) {
     const editModel: any = this.todos.find((x) => x.id == id);
     this.EditForm.patchValue(editModel);
@@ -128,11 +139,14 @@ export class TodosPageComponent implements OnInit {
   }
 
   Update() {
-    let editModel: any = this.todos.find((x) => x.id == this.EditForm.value.id);
-
-    editModel = { ...this.EditForm.value };
-
-    this.todos = [...this.todos];
+    // update işlemlerinden map kullanalım
+    this.todos.map((item) => {
+      if (item.id == this.EditForm.value.id) {
+        (item.completed = this.EditForm.get('completed')?.value),
+          (item.title = this.EditForm.get('title')?.value);
+      }
+      return item;
+    });
 
     this.EditForm.reset();
     this.editModalRef.close();
@@ -168,25 +182,43 @@ export class TodosPageComponent implements OnInit {
     this.todos = [this.AddForm.value, ...this.todos];
 
     // api ye veri gönderme post işlemi
-    this.http
-      .post('https://jsonplaceholder.typicode.com/todos', this.AddForm.value)
-      .subscribe({
-        next: (response) => {
-          // promise then bloğu
-          console.log('api-response', response);
-        },
-        error: (err) => {
-          // promise catch bloğu
-          console.log('err', err);
-        },
-        complete: () => {
-          // promise finally bloğu
-          this.addModalRef.close();
-          // modal kapadık.
-          // formu resetledik
-          this.AddForm.reset();
-        },
-      });
+    // this.http
+    //   .post('https://jsonplaceholder.typicode.com/todos', this.AddForm.value)
+    //   .subscribe({
+    //     next: (response) => {
+    //       // promise then bloğu
+    //       console.log('api-response', response);
+    //     },
+    //     error: (err) => {
+    //       // promise catch bloğu
+    //       console.log('err', err);
+    //     },
+    //     complete: () => {
+    //       // promise finally bloğu
+    //       this.addModalRef.close();
+    //       // modal kapadık.
+    //       // formu resetledik
+    //       this.AddForm.reset();
+    //     },
+    //   });
+
+    this.todoService.saveTodo(this.AddForm.value).subscribe({
+      next: (response) => {
+        // promise then bloğu
+        console.log('api-response', response);
+      },
+      error: (err) => {
+        // promise catch bloğu
+        console.log('err', err);
+      },
+      complete: () => {
+        // promise finally bloğu
+        this.addModalRef.close();
+        // modal kapadık.
+        // formu resetledik
+        this.AddForm.reset();
+      },
+    });
 
     // api post işlemi ile apiye this.AddForm.value gönder.
   }
