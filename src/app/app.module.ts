@@ -12,6 +12,7 @@ import { TodosPageNewComponent } from './todos-page-new/todos-page-new.component
 import { TodoAddComponent } from './todos-page-new/components/todo-add/todo-add.component';
 import { TodoEditComponent } from './todos-page-new/components/todo-edit/todo-edit.component';
 import { TodoListComponent } from './todos-page-new/components/todo-list/todo-list.component';
+import { UnauthorizePageComponent } from './unauthorize-page/unauthorize-page.component';
 // angularda veri çekme işlemi yapabilir. Aynı axios gibi get,post,put,delete isteklerini atabiliriz.
 
 // 1. işlem HttpClientModule appModule import etmek
@@ -20,7 +21,7 @@ import { TodoListComponent } from './todos-page-new/components/todo-list/todo-li
 // 4. işlem gelen veriyi view'de async pipe ile karşılamak.
 
 @NgModule({
-  declarations: [AppComponent, TodosPageComponent, TodosPageNewComponent, TodoAddComponent, TodoEditComponent, TodoListComponent],
+  declarations: [AppComponent, TodosPageComponent, TodosPageNewComponent, TodoAddComponent, TodoEditComponent, TodoListComponent, UnauthorizePageComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
